@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แจ้งซ่อมเครื่องจักร - MMTS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f2f5; }
+        .header-bar { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .form-container { max-width: 600px; margin: -30px auto 20px; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .form-label { font-weight: 600; color: #495057; }
+        .btn-submit { background: linear-gradient(45deg, #11998e, #38ef7d); border: none; font-weight: bold; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4); }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar text-center mb-4">
+        <div class="container">
+            <h3>📝 ใบแจ้งซ่อม (Service Request)</h3>
+            <p class="mb-2">ผู้ใช้งาน: <span id="userDisplay" class="badge bg-warning text-dark fs-6">...</span></p>
+            
+            <div class="mb-3">
+                <a href="machines.html" class="btn btn-sm btn-light text-primary fw-bold rounded-pill px-3 shadow-sm">
+                    <i class="bi bi-search"></i> ค้นหา/ดูรูปเครื่องจักร
+                </a>
+            </div>
+
+            <button onclick="logout()" class="btn btn-sm btn-outline-light rounded-pill px-3 opacity-75">ออกจากระบบ</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="form-container">
+            <form id="repairForm" onsubmit="submitTicket(event)">
+                
+                <div class="mb-3">
+                    <label class="form-label"><i class="bi bi-robot"></i> เลือกเครื่องจักรที่เสีย</label>
+                    <select class="form-select form-select-lg" id="machineSelect" required>
+                        <option value="" selected disabled>-- ค้นหา หรือ เลือกรายการ --</option>
+                        </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><i class="bi bi-exclamation-triangle"></i> อาการ / ปัญหาที่พบ</label>
+                    <textarea class="form-control" id="problemDesc" rows="3" placeholder="เช่น เครื่องมีเสียงดัง, ไฟไม่เข้า, โซ่ขาด..." required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><i class="bi bi-camera"></i> รูปภาพหน้างาน (ถ้ามี)</label>
+                    <input type="file" class="form-control" id="photoInput" accept="image/*">
+                    <div class="form-text text-muted">แนบรูปจะช่วยให้ช่างเตรียมอะไหล่ได้เร็วขึ้น</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label"><i class="bi bi-speedometer2"></i> ความเร่งด่วน</label>
+                    <div class="d-flex gap-2">
+                        <input type="radio" class="btn-check" name="urgency" id="u1" value="Normal" checked>
+                        <label class="btn btn-outline-secondary w-100" for="u1">ปกติ</label>
+
+                        <input type="radio" class="btn-check" name="urgency" id="u2" value="Urgent">
+                        <label class="btn btn-outline-warning text-dark w-100" for="u2">ด่วน</label>
+
+                        <input type="radio" class="btn-check" name="urgency" id="u3" value="Critical">
+                        <label class="btn btn-outline-danger w-100" for="u3">เครื่องหยุด (ด่วนมาก)</label>
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-submit btn-lg py-3">🚀 ส่งแจ้งซ่อม</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // เช็ค Login
+        const currentUser = localStorage.getItem('mmts_user');
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        }
+        document.getElementById('userDisplay').innerText = currentUser;
+
+        // --- Master Data เครื่องจักร (ชุดเดียวกับ machines.html) ครบ 51 เครื่อง ---
+        const machines = [
+            { id: "MTM-001", name: "เครื่องคลายม้วน (Uncoiler) - 2.2kw" },
+            { id: "MTM-002", name: "เครื่องรีดบานเกล็ด (Louver) - 11kw" },
+            { id: "MTM-003", name: "เครื่องรีดแป C-LINE - 3.7kw" },
+            { id: "MTM-004", name: "เครื่องรีดตัว Z 150 - 7.5kw" },
+            { id: "MTM-005", name: "เครื่องรีดครอบข้าง - 1.5kw" },
+            { id: "MTM-006", name: "เครื่องรีดตัว Z 200 - 11kw" },
+            { id: "MTM-007", name: "เครื่องรีดตัว Z 250 - 11kw" },
+            { id: "MTM-008", name: "เครื่องย้ำครอบสันจั่วซีแพค - 3.7kw" },
+            { id: "MTM-009", name: "เครื่องย้ำครอบข้างลอนซีแพค - 3.7kw" },
+            { id: "MTM-010", name: "เครื่องรีดรางน้ำ 407 - 2.2kw" },
+            { id: "MTM-011", name: "เครื่องพับไฮดรอลิค 6m (มีหน้าจอ) - 5.5kw" },
+            { id: "MTM-012", name: "เครื่องรีดรางน้ำสันตะเข้ - 0.75kw" },
+            { id: "MTM-013", name: "เครื่องรีดรางน้ำ 457 - 2.2kw" },
+            { id: "MTM-014", name: "เครื่องรีดลอนซีแพค 750 - 16kw" },
+            { id: "MTM-015", name: "เครื่องรีดตะเข็บคู่ LT-760 - 5.5kw" },
+            { id: "MTM-016", name: "เครื่องรีดบานเกล็ด 2 IN 1 - 0.75kw" },
+            { id: "MTM-017", name: "เครื่องรีดแปซีแพค - 3.7kw" },
+            { id: "MTM-018", name: "เครื่องผ่าแผ่น (Slitting) - 0.75kw" },
+            { id: "MTM-019", name: "เครื่องรีดเส้นระแนงรั้ว 2 IN 1 - 0.75kw" },
+            { id: "MTM-020", name: "เครื่องรีดลอนผนัง 4 สันลอน - 2.2kw" },
+            { id: "MTM-021", name: "เครื่องพับแมนนวล 4.5m" },
+            { id: "MTM-022", name: "เครื่องรีดฝ้าเพดาน 16 สันลอน - 1.5kw" },
+            { id: "MTM-023", name: "เครื่องรีดลอนแบบสังกะสี - 11kw" },
+            { id: "MTM-024", name: "เครื่องย้ำครอบข้างโค้ง - 1.5kw" },
+            { id: "MTM-025", name: "เครื่องรีดสามสันลอนสูง 760 - 5.5kw" },
+            { id: "MTM-026", name: "เครื่องปั๊มขาคลิปล็อค - 1.5kw" },
+            { id: "MTM-027", name: "เครื่องปั๊มลายขาคลิปล็อค - 1.1kw" },
+            { id: "MTM-028", name: "เครื่องครอบปิดหน้า PU (3 สันลอน) - 1.1kw" },
+            { id: "MTM-029", name: "เครื่องผ่าแผ่นแบบมีฟันตัด - 0.75kw" },
+            { id: "MTM-030", name: "เครื่องครอบปิดหน้า PU (ตะเข็บคู่ 760) - 1.1kw" },
+            { id: "MTM-031", name: "เครื่องรีดลอนตะเข็บคู่ LT-750 - 5.5kw" },
+            { id: "MTM-032", name: "เครื่องรีดลอนซิกแซก - 5.5kw" },
+            { id: "MTM-033", name: "เครื่องรีดลอนรั้ว Buttress Fence - 5.5kw" },
+            { id: "MTM-034", name: "เครื่องรีดลอนรั้ว U Fence - 5.5kw" },
+            { id: "MTM-035", name: "เครื่องรีดบัวผนัง - 2.2kw" },
+            { id: "MTM-036", name: "เครื่องพับไฮดรอลิค 6m (กดปุ่ม) - 5.5kw" },
+            { id: "MTM-037", name: "เครื่องพับแมนนวล 3.5m" },
+            { id: "MTM-038", name: "เครื่องย้ำโค้ง ลอน 760 - 5.5kw" },
+            { id: "MTM-039", name: "เครื่องรีดครอบ 2 IN 1 - 0.75kw" },
+            { id: "MTM-040", name: "เครื่องรีดลอนพื้น Decking Floor - 35kw" },
+            { id: "MTM-041", name: "เครื่องรีดผนังระแนงเฉียง 3 สัน - 1.5kw" },
+            { id: "MTM-042", name: "เครื่องรีดผนังครึ่งวงกลม - 1.5kw" },
+            { id: "MTM-043", name: "เครื่องย้ำครอบข้างโค้ง Manual" },
+            { id: "MTM-044", name: "เครื่องรีดฝ้าเพดาน/ผนังระแนง - 1.5kw" },
+            { id: "MTM-045", name: "เครื่องรีดผนังระแนงเฉียง 2 สัน - 2.2kw" },
+            { id: "MTM-046", name: "เครื่องกวนถังน้ำยา - 0.75kw" },
+            { id: "MTM-047", name: "เครื่องรีดเหล็กตัว C3 - 7.5kw" },
+            { id: "MTM-048", name: "เครื่องอันคอยล์เลอร์ (Uncoiler) - 2.2kw" },
+            { id: "MTM-049", name: "เครื่องครอบปิดหน้า PU (ตะเข็บคู่ 760) - 1.1kw" },
+            { id: "MTM-050", name: "เครื่องรีดรางน้ำ 405 - 1.5kw" },
+            { id: "MTM-051", name: "เครื่องคลายม้วนแบบใช้มือหมุน" }
+        ];
+
+        // วนลูปเอาข้อมูลใส่ Dropdown
+        const select = document.getElementById('machineSelect');
+        machines.forEach(m => {
+            let option = document.createElement("option");
+            option.value = m.id + " : " + m.name;
+            option.text = m.id + " : " + m.name;
+            select.appendChild(option);
+        });
+
+        // ตรวจสอบว่ามีการกดมาจากหน้า machines.html หรือไม่?
+        const preSelected = localStorage.getItem('selected_machine_id');
+        if (preSelected) {
+            // ค้นหา option ที่มีค่า ID ตรงกันแล้วเลือกเลย
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value.startsWith(preSelected)) {
+                    select.selectedIndex = i;
+                    break;
+                }
+            }
+            localStorage.removeItem('selected_machine_id'); // ล้างค่าทิ้ง
+        }
+
+        // --- ฟังก์ชันส่งข้อมูล ---
+        function submitTicket(e) {
+            e.preventDefault();
+
+            // รับค่าจากฟอร์ม
+            const machineVal = document.getElementById('machineSelect').value;
+            const problemVal = document.getElementById('problemDesc').value;
+            const urgencyVal = document.querySelector('input[name="urgency"]:checked').value;
+            const photoFile = document.getElementById('photoInput').files[0];
+
+            if(!machineVal) { Swal.fire('ลืมเลือกเครื่อง!', 'กรุณาเลือกเครื่องจักรด้วยครับ', 'warning'); return; }
+
+            // แยก ID กับ ชื่อเครื่อง (เช่น "MTM-001 : เครื่อง A" -> id="MTM-001", name="เครื่อง A")
+            const parts = machineVal.split(" : ");
+            const mID = parts[0];
+            const mName = parts[1] || machineVal;
+
+            // แปลงไฟล์รูปเป็น Base64 (ถ้ามี)
+            if (photoFile) {
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    saveToLocalStorage(mID, mName, problemVal, urgencyVal, reader.result);
+                }
+                reader.readAsDataURL(photoFile);
+            } else {
+                saveToLocalStorage(mID, mName, problemVal, urgencyVal, null);
+            }
+        }
+
+        function saveToLocalStorage(id, name, prob, urg, photo64) {
+            // สร้าง Ticket Object
+            const newTicket = {
+                id: "TK-" + Math.floor(100000 + Math.random() * 900000), // สุ่มเลขใบงาน
+                date: new Date().toLocaleString('th-TH'),
+                machineId: id,
+                machineName: name,
+                problem: prob,
+                urgency: urg,
+                photo: photo64,
+                reporter: currentUser,
+                status: "PENDING", // สถานะเริ่มต้น
+                technician: null   // ยังไม่มีช่างรับ
+            };
+
+            // ดึงข้อมูลเก่ามา + เพิ่มอันใหม่
+            const tickets = JSON.parse(localStorage.getItem('mmts_tickets')) || [];
+            tickets.push(newTicket);
+            localStorage.setItem('mmts_tickets', JSON.stringify(tickets));
+
+            // แจ้งเตือนสำเร็จ
+            Swal.fire({
+                title: 'บันทึกสำเร็จ!',
+                text: 'แจ้งซ่อมเรียบร้อย รหัสใบงาน: ' + newTicket.id,
+                icon: 'success',
+                confirmButtonText: 'ตกลง'
+            }).then(() => {
+                window.location.href = 'dashboard.html'; // เด้งไปหน้า Dashboard
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('mmts_user');
+            localStorage.removeItem('mmts_role');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

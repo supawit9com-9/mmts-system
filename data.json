@@ -1,0 +1,138 @@
+{
+    "repairs": [
+        {
+            "technician": "ช่างบิว",
+            "status": "COMPLETED",
+            "image": "1269_20251205_152505.mp4",
+            "customer": "home123",
+            "machineName": "hhh111",
+            "problem": "ไฟดับทั้งเครื่อง",
+            "serviceDate": "2026-01-29",
+            "id": "TK-4593",
+            "serialNo": "",
+            "warranty": "out_warranty",
+            "mapLink": ""
+        },
+        {
+            "technician": "มังกร พ้นไฟ",
+            "status": "COMPLETED",
+            "image": "1769480696_IMG_6862.JPG",
+            "customer": "คุณปองศัก",
+            "machineName": "เครื่องลีดแป c-line",
+            "serialNo": "1111111111111",
+            "mapLink": "https://maps.app.goo.gl/e49dVx3XXuY6k5X37",
+            "problem": "สวิทพัง",
+            "serviceDate": "2026-08-14",
+            "id": "TK-76544"
+        },
+        {
+            "technician": "ช่างบิว",
+            "status": "COMPLETED",
+            "image": "1769659016_6.png",
+            "customer": "ขิม",
+            "machineName": "หุ้น",
+            "serialNo": "111121212",
+            "warranty": "out_warranty",
+            "mapLink": "https://maps.app.goo.gl/43Df15TUFKA4ZttM6",
+            "problem": "สายไฟขาด",
+            "serviceDate": "2026-01-29",
+            "id": "TK-60837"
+        }
+    ],
+    "installs": [
+        {
+            "technician": "ช่างบิว",
+            "status": "COMPLETED",
+            "image": "3199_IMG_6934.JPG",
+            "project": "นายวราสร",
+            "location": "บ้านนา",
+            "startDate": "2026-02-13",
+            "id": "IN-3147"
+        },
+        {
+            "technician": "มังกร พ้นไฟ",
+            "status": "COMPLETED",
+            "image": "1769478687_7.png",
+            "project": "บริษัทตั้ง หวังเจ้ง",
+            "location": "map..",
+            "startDate": "2026-06-10",
+            "id": "IN-32427"
+        }
+    ],
+    "users": [
+        {
+            "u": "admin",
+            "p": "1234",
+            "name": "พี่เก้ง (Manager)",
+            "role": "MANAGER",
+            "tel": "081-234-5678",
+            "avatar": "1769480759_P1067143.JPG"
+        },
+        {
+            "u": "tech1",
+            "p": "1111",
+            "name": "ช่างบิว",
+            "role": "TECH",
+            "tel": "090-999-8888",
+            "avatar": "9224_Gemini_Generated_Image_9egkdb9egkdb9egk.png"
+        },
+        {
+            "u": "พี่มังกร",
+            "p": "1111",
+            "name": "มังกร พ้นไฟ",
+            "tel": "0998887798",
+            "role": "TECH",
+            "avatar": "1769479108_Gemini_Generated_Image_eopxijeopxijeopx.png"
+        },
+        {
+            "u": "arsenal",
+            "p": "11111",
+            "name": "นายช่างเล็ก",
+            "tel": "0999999999",
+            "role": "TECH",
+            "avatar": ""
+        }
+    ],
+    "messages": [
+        {
+            "sender": "พี่เก้ง (Manager)",
+            "text": "สวัสดีช่างบิว",
+            "time": "15:00"
+        },
+        {
+            "sender": "ช่างบิว",
+            "text": "krub 555",
+            "time": "15:01"
+        },
+        {
+            "sender": "ช่างบิว",
+            "text": "กำลังเดินทางครับ",
+            "time": "15:03"
+        },
+        {
+            "sender": "พี่เก้ง (Manager)",
+            "text": "ครับผม",
+            "time": "15:34"
+        },
+        {
+            "sender": "พี่เก้ง (Manager)",
+            "text": "สวัสดีวันนี้ 27 มกราคม",
+            "time": "08:45"
+        },
+        {
+            "sender": "ช่างบิว",
+            "text": "สวัสดี พี่เก้ง",
+            "time": "08:52"
+        },
+        {
+            "sender": "พี่เก้ง (Manager)",
+            "text": "ตั้งใจทำงานครับ ลุย",
+            "time": "09:05"
+        },
+        {
+            "sender": "พี่เก้ง (Manager)",
+            "text": "555",
+            "time": "10:52"
+        }
+    ]
+}

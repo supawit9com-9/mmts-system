@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - MTM Service</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            /* ✅ 1. ใส่รูปพื้นหลังตรงนี้ (เปลี่ยน URL ในวงเล็บได้เลย) */
+            background: url('https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed; 
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        /* เลเยอร์สีดำจางๆ ทับรูปเพื่อให้ตัวหนังสืออ่านง่าย */
+        body::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); z-index: 0;
+        }
+
+        .login-card {
+            position: relative; z-index: 1; /* ให้ลอยเหนือพื้นหลัง */
+            background: rgba(255, 255, 255, 0.95); /* สีขาวโปร่งแสงนิดๆ */
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            backdrop-filter: blur(10px); /* เอฟเฟกต์กระจกเบลอ */
+        }
+        .logo-icon { font-size: 3.5rem; color: #1e3c72; margin-bottom: 10px; }
+        .form-control { border-radius: 10px; padding: 12px; background: #f8f9fa; border: 1px solid #e9ecef; }
+        .form-control:focus { background: #fff; border-color: #1e3c72; box-shadow: 0 0 0 4px rgba(30, 60, 114, 0.1); }
+        
+        .btn-login {
+            background: #1e3c72; color: white; border-radius: 30px; padding: 12px; width: 100%;
+            font-weight: bold; transition: 0.3s; border: none; margin-top: 10px;
+        }
+        .btn-login:hover { background: #2a5298; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(30, 60, 114, 0.3); }
+
+        .link-toggle { cursor: pointer; color: #1e3c72; font-weight: bold; text-decoration: none; transition: 0.2s; }
+        .link-toggle:hover { color: #d35400; text-decoration: underline; }
+
+        .back-home {
+            position: absolute; top: 20px; left: 20px; z-index: 2;
+            color: rgba(255,255,255,0.8); text-decoration: none; font-weight: bold;
+            display: flex; align-items: center; gap: 8px; padding: 8px 15px;
+            background: rgba(0,0,0,0.3); border-radius: 30px; transition: 0.3s;
+        }
+        .back-home:hover { background: rgba(255,255,255,0.2); color: white; }
+
+        /* Animation สลับหน้า */
+        .form-box { display: none; animation: fadeIn 0.4s; }
+        .form-box.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-home"><i class="bi bi-arrow-left"></i> กลับหน้าเว็บไซต์หลัก</a>
+
+    <div class="login-card">0
+        <div class="logo-icon"><i class="bi bi-gear-wide-connected"></i></div>
+        <h3 class="fw-bold text-dark mb-1">MTM Service</h3>
+        <p class="text-muted small mb-4">ระบบจัดการงานซ่อมและติดตั้ง</p>
+
+        <div id="loginBox" class="form-box active">
+            <form onsubmit="handleLogin(event)">
+                <div class="mb-3 text-start">
+                    <label class="small fw-bold text-muted ms-1">ชื่อผู้ใช้งาน</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-3"><i class="bi bi-person text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0 rounded-end-3" id="loginUser" placeholder="Username" required>
+                    </div>
+                </div>
+                <div class="mb-4 text-start">
+                    <label class="small fw-bold text-muted ms-1">รหัสผ่าน</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-3"><i class="bi bi-key text-muted"></i></span>
+                        <input type="password" class="form-control border-start-0 rounded-end-3" id="loginPass" placeholder="Password" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-login shadow-sm">เข้าสู่ระบบ</button>
+            </form>
+            
+            <div class="mt-4 pt-3 border-top">
+                <small class="text-muted">ยังไม่มีบัญชีใช่ไหม?</small> 
+                <span class="link-toggle" onclick="toggleForm('register')">สมัครสมาชิกใหม่</span>
+            </div>
+        </div>
+
+        <div id="registerBox" class="form-box">
+            <h5 class="fw-bold text-primary mb-3">สร้างบัญชีผู้ใช้งานใหม่</h5>
+            <form onsubmit="handleRegister(event)">
+                <div class="row g-2 mb-2">
+                    <div class="col-6"><input type="text" class="form-control" id="regUser" placeholder="ตั้ง Username" required></div>
+                    <div class="col-6"><input type="password" class="form-control" id="regPass" placeholder="ตั้ง Password" required></div>
+                </div>
+                <div class="mb-2"><input type="text" class="form-control" id="regName" placeholder="ชื่อ-นามสกุล จริง" required></div>
+                <div class="mb-3"><input type="text" class="form-control" id="regTel" placeholder="เบอร์โทรศัพท์" required></div>
+                
+                <button type="submit" class="btn btn-login bg-success shadow-sm">ยืนยันการสมัคร</button>
+            </form>
+
+            <div class="mt-4 pt-3 border-top">
+                <small class="text-muted">มีบัญชีอยู่แล้ว?</small> 
+                <span class="link-toggle" onclick="toggleForm('login')">กลับไปเข้าสู่ระบบ</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5000/api";
+
+        // ฟังก์ชันสลับหน้า Login <-> Register
+        function toggleForm(target) {
+            document.querySelectorAll('.form-box').forEach(el => el.classList.remove('active'));
+            document.getElementById(target + 'Box').classList.add('active');
+        }
+
+        // 🟢 ฟังก์ชัน Login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUser').value.trim();
+            const p = document.getElementById('loginPass').value.trim();
+            
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem('mmts_user', data.user.name);
+                    localStorage.setItem('mmts_role', data.user.role);
+                    Swal.fire({ icon: 'success', title: 'ยินดีต้อนรับ', text: `สวัสดีคุณ ${data.user.name}`, timer: 1500, showConfirmButton: false }).then(() => {
+                        window.location.href = (data.user.role === 'MANAGER') ? 'admin.html' : 'dashboard.html';
+                    });
+                } else {
+                    Swal.fire('เข้าสู่ระบบไม่สำเร็จ', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
+                }
+            } catch (err) { Swal.fire('Error', 'ไม่สามารถเชื่อมต่อ Server ได้', 'error'); }
+        }
+
+        // 🔵 ฟังก์ชัน Register (สมัครสมาชิก)
+        async function handleRegister(e) {
+            e.preventDefault();
+            const u = document.getElementById('regUser').value.trim();
+            const p = document.getElementById('regPass').value.trim();
+            const name = document.getElementById('regName').value.trim();
+            const tel = document.getElementById('regTel').value.trim();
+
+            if(!u || !p || !name) return Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+
+            // สร้าง User ใหม่ (Default เป็น TECH)
+            const newUser = { u: u, p: p, name: name, tel: tel, role: 'TECH', avatar: '' };
+
+            try {
+                const res = await fetch(`${API_URL}/users`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newUser)
+                });
+
+                if (res.ok) {
+                    Swal.fire('สมัครสมาชิกสำเร็จ!', 'กรุณาเข้าสู่ระบบด้วยรหัสที่ตั้งไว้', 'success');
+                    toggleForm('login'); // กลับไปหน้า Login
+                    // เคลียร์ฟอร์ม
+                    document.getElementById('regUser').value = '';
+                    document.getElementById('regPass').value = '';
+                    document.getElementById('regName').value = '';
+                    document.getElementById('regTel').value = '';
+                } else {
+                    Swal.fire('ผิดพลาด', 'ชื่อผู้ใช้นี้อาจมีคนใช้แล้ว', 'error');
+                }
+            } catch (err) { Swal.fire('Error', 'ไม่สามารถบันทึกข้อมูลได้', 'error'); }
+        }
+    </script>
+
+</body>
+</html>

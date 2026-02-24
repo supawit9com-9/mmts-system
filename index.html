@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บริษัท สยามเหล็กไทยอุตสาหกรรม จำกัด</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* --- CSS Variables & Reset --- */
+        :root { --primary: #1e3c72; --secondary: #2a5298; --accent: #ffc107; --text-dark: #333; --bg-light: #f8f9fa; --nav-height: 60px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Sarabun', sans-serif; }
+        body { color: var(--text-dark); line-height: 1.6; overflow-x: hidden; }
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+        ul { list-style: none; }
+        img { max-width: 100%; height: auto; display: block; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Kanit', sans-serif; }
+
+        /* --- Navbar --- */
+        .navbar { background: white; height: var(--nav-height); width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; align-items: center; }
+        .container { max-width: 1200px; width: 100%; margin: 0 auto; padding: 0 20px; }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; height: 100%; }
+        
+        .logo img { height: 40px; width: auto; }
+        
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-links a { font-weight: 500; font-size: 1rem; color: var(--text-dark); position: relative; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+        
+        .btn-employee { 
+            background-color: var(--accent); color: #000 !important; padding: 8px 20px; border-radius: 50px; 
+            font-weight: bold; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); white-space: nowrap;
+        }
+        .btn-employee:hover { transform: translateY(-2px); background-color: #ffca2c; }
+
+        .hamburger { display: none; font-size: 1.5rem; cursor: pointer; color: var(--primary); }
+
+        /* --- Hero Section --- */
+        .hero { 
+            height: 100vh; width: 100%; 
+            background: linear-gradient(rgba(10, 30, 70, 0.75), rgba(10, 30, 70, 0.75)), url('qqq.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            display: flex; align-items: center; justify-content: center; text-align: center; color: white;
+            padding-top: var(--nav-height);
+        }
+        .hero-content { padding: 20px; animation: fadeInUp 1s ease; }
+        .hero-content h1 { font-size: 3.5rem; font-weight: 700; margin-bottom: 10px; line-height: 1.2; text-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .hero-content h2 { font-size: 1.5rem; font-weight: 300; margin-bottom: 20px; opacity: 0.9; }
+        .hero-content p { max-width: 700px; margin: 0 auto 30px; font-size: 1.1rem; opacity: 0.8; }
+        .btn-primary { background: var(--accent); color: #000; padding: 12px 35px; border-radius: 50px; font-weight: bold; font-size: 1.1rem; display: inline-block; box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4); }
+        .btn-primary:hover { background: white; transform: scale(1.05); }
+
+        /* --- Content Sections --- */
+        .section { padding: 80px 0; }
+        .bg-light { background: var(--bg-light); }
+        .bg-blue { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        
+        .section-title { text-align: center; font-size: 2.5rem; margin-bottom: 10px; font-weight: 600; }
+        .section-subtitle { text-align: center; color: inherit; opacity: 0.7; margin-bottom: 50px; font-size: 1.1rem; }
+
+        /* Grids & Cards */
+        .features-grid, .product-grid, .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        
+        .feature-card { background: white; padding: 40px 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); text-align: center; transition: 0.3s; }
+        .feature-card:hover { transform: translateY(-10px); }
+        .feature-card i { font-size: 3.5rem; color: var(--primary); margin-bottom: 20px; }
+        .feature-card h3 { font-size: 1.4rem; margin-bottom: 10px; }
+
+        .product-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.3s; }
+        .product-card:hover { transform: translateY(-5px); }
+        .product-img { height: 240px; background-size: cover; background-position: center; }
+        .product-info { padding: 25px; text-align: center; }
+        .product-info h3 { font-size: 1.3rem; margin-bottom: 10px; color: var(--primary); }
+        .btn-text { color: var(--secondary); font-weight: bold; margin-top: 10px; display: inline-block; }
+
+        .service-item { background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; text-align: center; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2); }
+        .service-item i { font-size: 3rem; margin-bottom: 15px; color: var(--accent); }
+        .service-item h3 { font-size: 1.3rem; margin-bottom: 10px; }
+
+        /* --- Contact --- */
+        .contact-container { display: flex; flex-wrap: wrap; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
+        .contact-info { flex: 1; padding: 50px; min-width: 300px; }
+        .map-box { flex: 1; min-width: 300px; height: 550px; }
+        
+        .info-list p { margin-bottom: 20px; font-size: 1.1rem; display: flex; align-items: flex-start; gap: 15px; }
+        .info-list i { color: var(--primary); font-size: 1.3rem; width: 25px; margin-top: 5px; }
+        
+        .qr-section { margin-top: 40px; text-align: center; padding-top: 30px; border-top: 1px solid #eee; }
+        .qr-grid { display: flex; justify-content: center; gap: 40px; margin-top: 20px; flex-wrap: wrap; }
+        .qr-item { text-align: center; }
+        .qr-img-box img { width: 140px; border-radius: 10px; border: 1px solid #ddd; padding: 5px; margin-bottom: 10px; }
+        .qr-item span { display: block; font-weight: 600; font-size: 0.9rem; }
+
+        footer { background: #111; color: #888; text-align: center; padding: 30px 0; font-size: 0.9rem; }
+
+        /* --- 📱 MOBILE BALANCING (ปรับสมดุลมือถือ) --- */
+        @media (max-width: 900px) {
+            .hamburger { display: block; }
+            
+            /* เมนูมือถือ */
+            .nav-links { 
+                position: fixed; top: var(--nav-height); left: 0; width: 100%; background: white; 
+                flex-direction: column; align-items: center; padding: 20px 0; /* ลด padding บนล่าง */
+                box-shadow: 0 5px 10px rgba(0,0,0,0.1); gap: 15px; /* ลดช่องว่างระหว่างลิ้งค์ */
+                transform: translateY(-150%); transition: transform 0.4s ease; z-index: 999;
+            }
+            .nav-links.active { transform: translateY(0); }
+            .nav-links li { width: 100%; text-align: center; margin: 5px 0; } /* ลด margin ลิ้งค์ */
+            .btn-employee { width: auto; margin-top: 5px; }
+
+            /* Hero Section สมดุลขึ้น */
+            .hero { background-attachment: scroll; padding: 0 15px; /* เพิ่ม padding ด้านข้างไม่ให้ชิดขอบ */ }
+            .hero-content h1 { font-size: 2.2rem; margin-bottom: 15px; } /* ลดขนาดฟอนต์หัวข้อ */
+            .hero-content h2 { font-size: 1.2rem; }
+            .hero-content p { font-size: 1rem; }
+            .btn-primary { padding: 10px 25px; font-size: 1rem; }
+            
+            /* Sections กระชับขึ้น */
+            .section { padding: 50px 0; }
+            .section-title { font-size: 1.8rem; }
+            .section-subtitle { margin-bottom: 35px; font-size: 1rem; }
+            
+            /* Cards กระชับขึ้น */
+            .feature-card { padding: 30px 20px; } /* ลด padding ในการ์ด */
+            .feature-card i { font-size: 2.5rem; }
+            
+            /* Contact สมดุลขึ้น */
+            .contact-container { flex-direction: column; }
+            .contact-info { padding: 30px 20px; /* ลด padding */ }
+            .map-box { height: 300px; }
+            .qr-grid { gap: 20px; /* ลดช่องว่างระหว่าง QR Code */ }
+            .qr-img-box img { width: 120px; }
+        }
+
+        @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <img src="logo2.png" alt="Siam Thai Steel Logo" onerror="this.style.display='none';this.parentElement.innerHTML='<h3 style=\'color:#1e3c72\'>SIAM THAI STEEL</h3>'">
+            </a>
+            
+            <div class="hamburger" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+
+            <ul class="nav-links" id="navMenu">
+                <li><a href="#home" class="active" onclick="toggleMenu()">หน้าแรก</a></li>
+                <li><a href="#about" onclick="toggleMenu()">เกี่ยวกับเรา</a></li>
+                <li><a href="#products" onclick="toggleMenu()">สินค้า</a></li>
+                <li><a href="#services" onclick="toggleMenu()">บริการ</a></li>
+                <li><a href="#contact" onclick="toggleMenu()">ติดต่อเรา</a></li>
+                <li>
+                    <a href="login.html" class="btn-employee">
+                        <i class="fas fa-tools"></i> ระบบแจ้งซ่อม
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <header id="home" class="hero">
+        <div class="hero-content">
+            <h1>สยามเหล็กไทยอุตสาหกรรม จำกัด</h1>
+            <h2>SIAM THAI STEEL INDUSTRY CO., LTD.</h2>
+            <p>ผู้นำด้านอุตสาหกรรมเหล็กครบวงจร มาตรฐานระดับสากล มุ่งมั่นพัฒนาเพื่อรากฐานที่มั่นคง</p>
+            <a href="#products" class="btn-primary">ดูสินค้าและบริการ <i class="fas fa-arrow-down ms-2"></i></a>
+        </div>
+    </header>
+
+    <section id="about" class="section bg-light">
+        <div class="container">
+            <h2 class="section-title">ทำไมต้องเลือกเรา?</h2>
+            <p class="section-subtitle">ความเชี่ยวชาญและประสบการณ์ที่สั่งสมมายาวนาน</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-award"></i>
+                    <h3>คุณภาพมาตรฐาน</h3>
+                    <p>สินค้าเหล็กทุกชิ้นผ่านการตรวจสอบคุณภาพ (QC) อย่างเข้มงวด</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-truck-fast"></i>
+                    <h3>จัดส่งรวดเร็ว</h3>
+                    <p>ระบบโลจิสติกส์ที่ทันสมัย พร้อมรถเครนส่งตรงถึงหน้างาน</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-hand-holding-dollar"></i>
+                    <h3>ราคายุติธรรม</h3>
+                    <p>จำหน่ายในราคาโรงงาน พร้อมให้คำปรึกษาเรื่องงบประมาณ</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="products" class="section">
+        <div class="container">
+            <h2 class="section-title">สินค้าแนะนำ</h2>
+            <p class="section-subtitle">เราคัดสรรสิ่งที่ดีที่สุดเพื่อโครงสร้างที่มั่นคง</p>
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-img" style="background-image: url('lon1.png');"></div>
+                    <div class="product-info">
+                        <h3>เหล็กเส้นข้ออ้อย</h3>
+                        <p>เหล็กเกรดดี แข็งแรง สำหรับงานโครงสร้างหลัก</p>
+                        <a href="#" class="btn-text">ดูรายละเอียด <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img" style="background-image: url('lon2.png');"></div>
+                    <div class="product-info">
+                        <h3>เหล็กรูปพรรณ</h3>
+                        <p>เหล็กกล่อง ท่อกลม ตัวซี ฉาก หลากหลายขนาด</p>
+                        <a href="#" class="btn-text">ดูรายละเอียด <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img" style="background-image: url('og1.png');"></div>
+                    <div class="product-info">
+                        <h3>แผ่นเหล็ก / เมทัลชีท</h3>
+                        <p>ผลิตตามสั่ง ตัดความยาวได้ พร้อมฉนวนกันร้อน</p>
+                        <a href="#" class="btn-text">ดูรายละเอียด <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" class="section bg-blue">
+        <div class="container">
+            <h2 class="section-title" style="color:white">บริการของเรา</h2>
+            <p class="section-subtitle" style="color:rgba(255,255,255,0.8)">บริการครบวงจร ดูแลใส่ใจทุกขั้นตอน</p>
+            <div class="services-grid">
+                <div class="service-item">
+                    <i class="fas fa-layer-group"></i>
+                    <h3>ผลิตหลังคาเมทัลชีท</h3>
+                    <p>สั่งตัดตามความยาว ครบทุกรูปลอน</p>
+                </div>
+                <div class="service-item">
+                    <i class="fas fa-spray-can"></i>
+                    <h3>ฉีดฉนวน PU Foam</h3>
+                    <p>ฉนวนกันความร้อนคุณภาพสูง</p>
+                </div>
+                <div class="service-item">
+                    <i class="fas fa-cogs"></i>
+                    <h3>เครื่องจักรอุตสาหกรรม</h3>
+                    <p>นำเข้าและจำหน่ายเครื่องรีดหลังคา</p>
+                </div>
+                <div class="service-item">
+                    <i class="fas fa-truck"></i>
+                    <h3>บริการจัดส่งทั่วไทย</h3>
+                    <p>ส่งสินค้าถึงหน้างาน รวดเร็ว ปลอดภัย</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section">
+        <div class="container">
+            <h2 class="section-title">ติดต่อเรา</h2>
+            <div class="contact-container">
+                <div class="contact-info">
+                    <h3 style="margin-bottom:20px; font-weight:700">บริษัท สยามเหล็กไทยอุตสาหกรรม จำกัด</h3>
+                    <div class="info-list">
+                        <p><i class="fas fa-map-marker-alt"></i> 444 หมู่ 4 ต.บึงเนียม อ.เมือง จ.ขอนแก่น 40000</p>
+                        <p><i class="fas fa-phone-alt"></i> <a href="tel:043244550">043-244-550-2</a></p>
+                        <p><i class="fas fa-envelope"></i> mtmcenterkk@gmail.com</p>
+                        <p><i class="fab fa-line"></i> @siamthaisteel</p>
+                    </div>
+
+                    <div class="qr-section">
+                        <h4><i class="fas fa-qrcode"></i> สแกนเพิ่มเพื่อน</h4>
+                        <div class="qr-grid">
+                            <div class="qr-item">
+                                <div class="qr-img-box"><img src="LINE_qrcode.png" alt="Line QR"></div>
+                                <span><i class="fab fa-line text-success"></i> LINE Official</span>
+                            </div>
+                            <div class="qr-item">
+                                <div class="qr-img-box"><img src="FB_qrcode.png" alt="FB QR"></div>
+                                <span><i class="fab fa-facebook text-primary"></i> Facebook Page</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="map-box">
+                    <iframe src="https://google.com/maps/embed?pb=!1m18!1m12!1m3!1d244926.52127472113!2d102.77752898879245!3d16.42599980431063!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31228d5c0e84ebc1%3A0xa7f88f29bdc07f29!2z4Liq4Lii4Liy4Lih4LmA4Lir4Lil4LmH4LiB4LmE4LiX4LiiIOC4reC4uOC4leC4quC4suC4q-C4geC4o-C4o-C4oSDguKrguLPguJnguLHguIHguIfguLLguJnguYHguKvguYjguIfguYPguKvguKHguYgg4LiV4Liz4Lia4Lil4Lia4Li24LiH4LmA4LiZ4Li14Lii4Lih!5e0!3m2!1sth!2sth!4v1768981161188!5m2!1sth!2sth" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2024 Siam Thai Steel Industry Co., Ltd. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            const nav = document.getElementById('navMenu');
+            nav.classList.toggle('active');
+        }
+    </script>
+
+</body>
+</html>

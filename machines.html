@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ทะเบียนเครื่องจักร - MMTS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8f9fa; }
+        .navbar { background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%); }
+        .machine-card { 
+            border: none; border-radius: 15px; transition: transform 0.2s; 
+            height: 100%; overflow: hidden; background: #fff;
+        }
+        .machine-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .img-container {
+            height: 220px; background-color: #e9ecef; position: relative;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .machine-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+        .machine-card:hover .machine-img { transform: scale(1.05); }
+        .no-img-placeholder { color: #adb5bd; font-size: 3rem; display: flex; flex-direction: column; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4 shadow-sm sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold" href="#"><i class="bi bi-hdd-rack"></i> ทะเบียนเครื่องจักร (Machine Master)</a>
+            <div class="d-flex">
+                <a href="dashboard.html" class="btn btn-outline-light btn-sm fw-bold px-3 rounded-pill">
+                    <i class="bi bi-arrow-left"></i> ไปหน้า Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        <div class="row mb-4 justify-content-center">
+            <div class="col-md-6">
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" id="searchInput" placeholder="ค้นหาชื่อเครื่อง, รหัส MTM..." onkeyup="filterMachines()">
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="text-muted border-start border-4 border-success ps-2">รายการเครื่องจักรทั้งหมด (<span id="totalCount">0</span> เครื่อง)</h5>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="machineGrid"></div>
+    </div>
+
+    <script>
+        // ข้อมูลเครื่องจักร (Master Data) - 51 รายการ
+        const machines = [
+            // --- ชุดที่ 1 (001-010) ---
+            { id: "MTM-001", name: "เครื่องคลายม้วน (Uncoiler)", spec: "Motor: 2.2 kw | 380v", weight: "2 tons" },
+            { id: "MTM-002", name: "เครื่องรีดบานเกล็ด (Louver)", spec: "Motor: 11 kw | 60Hz", weight: "13.5 tons" },
+            { id: "MTM-003", name: "เครื่องรีดแป C-LINE", spec: "Motor: 3.7 kw | 50Hz", weight: "3.5 tons" },
+            { id: "MTM-004", name: "เครื่องรีดตัว Z 150", spec: "Motor: 7.5 kw | 60Hz", weight: "8 tons" },
+            { id: "MTM-005", name: "เครื่องรีดครอบข้าง", spec: "Motor: 1.5 kw | 50Hz", weight: "13.5 tons" },
+            { id: "MTM-006", name: "เครื่องรีดตัว Z 200", spec: "Motor: 11 kw | 60Hz", weight: "8.5 tons" },
+            { id: "MTM-007", name: "เครื่องรีดตัว Z 250", spec: "Motor: 11 kw | 60Hz", weight: "9 tons" },
+            { id: "MTM-008", name: "เครื่องย้ำครอบสันจั่วซีแพค", spec: "Motor: 3.7 kw | 60Hz", weight: "1.7 tons" },
+            { id: "MTM-009", name: "เครื่องย้ำครอบข้างลอนซีแพค", spec: "Motor: 3.7 kw | 60Hz", weight: "1.8 tons" },
+            { id: "MTM-010", name: "เครื่องรีดรางน้ำ 407", spec: "Motor: 2.2 kw", weight: "2.5 tons" },
+
+            // --- ชุดที่ 2 (011-020) ---
+            { id: "MTM-011", name: "เครื่องพับไฮดรอลิค 6m (มีหน้าจอ)", spec: "Motor: 5.5 kw", weight: "4.4 tons" },
+            { id: "MTM-012", name: "เครื่องรีดรางน้ำสันตะเข้", spec: "Motor: 0.75 kw | 60Hz", weight: "1.4 tons" },
+            { id: "MTM-013", name: "เครื่องรีดรางน้ำ 457", spec: "Motor: 2.2 kw", weight: "2.5 tons" },
+            { id: "MTM-014", name: "เครื่องรีดลอนซีแพค 750", spec: "Motor: 16 kw | 60Hz", weight: "9 tons" },
+            { id: "MTM-015", name: "เครื่องรีดตะเข็บคู่ LT-760", spec: "Motor: 5.5 kw | 50Hz", weight: "7.2 tons" },
+            { id: "MTM-016", name: "เครื่องรีดบานเกล็ด 2 IN 1", spec: "Motor: 0.75 kw | 60Hz", weight: "1.4 tons" },
+            { id: "MTM-017", name: "เครื่องรีดแปซีแพค", spec: "Motor: 3.7 kw | 60Hz", weight: "3.5 tons" },
+            { id: "MTM-018", name: "เครื่องผ่าแผ่น (Slitting)", spec: "Motor: 0.75 kw | 50Hz", weight: "0.8 tons" },
+            { id: "MTM-019", name: "เครื่องรีดเส้นระแนงรั้ว 2 IN 1", spec: "Motor: 0.75 kw | 60Hz", weight: "0.7 tons" },
+            { id: "MTM-020", name: "เครื่องรีดลอนผนัง 4 สันลอน", spec: "Motor: 2.2 kw | 60Hz", weight: "3 tons" },
+
+            // --- ชุดที่ 3 (021-030) ---
+            { id: "MTM-021", name: "เครื่องพับแมนนวล 4.5m", spec: "ระบบมือโยก (Manual)", weight: "1.5 tons" },
+            { id: "MTM-022", name: "เครื่องรีดฝ้าเพดาน 16 สันลอน", spec: "Motor: 1.5 kw | 60Hz", weight: "0.8 tons" },
+            { id: "MTM-023", name: "เครื่องรีดลอนแบบสังกะสี", spec: "Motor: 11 kw | 60Hz", weight: "11 tons" },
+            { id: "MTM-024", name: "เครื่องย้ำครอบข้างโค้ง", spec: "Motor: 1.5 kw", weight: "0.5 tons" },
+            { id: "MTM-025", name: "เครื่องรีดสามสันลอนสูง 760", spec: "Motor: 5.5 kw | 50Hz", weight: "7.2 tons" },
+            { id: "MTM-026", name: "เครื่องปั๊มขาคลิปล็อค", spec: "Motor: 1.5 kw | 60Hz", weight: "0.8 tons" },
+            { id: "MTM-027", name: "เครื่องปั๊มลายขาคลิปล็อค", spec: "Motor: 1.1 kw | 60Hz", weight: "0.8 tons" },
+            { id: "MTM-028", name: "เครื่องครอบปิดหน้า PU (3 สันลอน)", spec: "Motor: 1.1 kw | 60Hz", weight: "1 tons" },
+            { id: "MTM-029", name: "เครื่องผ่าแผ่นแบบมีฟันตัด", spec: "Motor: 0.75 kw | 50Hz", weight: "1.85 tons" },
+            { id: "MTM-030", name: "เครื่องครอบปิดหน้า PU (ตะเข็บคู่ 760)", spec: "Motor: 1.1 kw | 60Hz", weight: "1 tons" },
+
+            // --- ชุดที่ 4 (031-040) ---
+            { id: "MTM-031", name: "เครื่องรีดลอนตะเข็บคู่ LT-750", spec: "Motor: 5.5 kw | 50Hz", weight: "16.8 tons" },
+            { id: "MTM-032", name: "เครื่องรีดลอนซิกแซก", spec: "Motor: 5.5 kw | 60Hz", weight: "9.5 tons" },
+            { id: "MTM-033", name: "เครื่องรีดลอนรั้ว Buttress Fence", spec: "Motor: 5.5 kw | 60Hz", weight: "3 tons" },
+            { id: "MTM-034", name: "เครื่องรีดลอนรั้ว U Fence", spec: "Motor: 5.5 kw | 60Hz", weight: "3 tons" },
+            { id: "MTM-035", name: "เครื่องรีดบัวผนัง", spec: "Motor: 2.2 kw | 60Hz", weight: "2.5 tons" },
+            { id: "MTM-036", name: "เครื่องพับไฮดรอลิค 6m (กดปุ่ม)", spec: "Motor: 5.5 kw", weight: "4.4 tons" },
+            { id: "MTM-037", name: "เครื่องพับแมนนวล 3.5m", spec: "ระบบมือโยก (Manual)", weight: "1.2 tons" },
+            { id: "MTM-038", name: "เครื่องย้ำโค้ง ลอน 760", spec: "Motor: 5.5 kw", weight: "2 tons" },
+            { id: "MTM-039", name: "เครื่องรีดครอบ 2 IN 1", spec: "Motor: 0.75 kw | 60Hz", weight: "2.7 tons" },
+            { id: "MTM-040", name: "เครื่องรีดลอนพื้น Decking Floor", spec: "Motor: 35 kw", weight: "18.5 tons" },
+
+            // --- ชุดที่ 5 (041-051) ---
+            { id: "MTM-041", name: "เครื่องรีดผนังระแนงเฉียง 3 สัน", spec: "Motor: 1.5 kw | 50Hz", weight: "2.2 tons" },
+            { id: "MTM-042", name: "เครื่องรีดผนังครึ่งวงกลม", spec: "Motor: 1.5 kw | 50Hz", weight: "2.9 tons" },
+            { id: "MTM-043", name: "เครื่องย้ำครอบข้างโค้ง Manual", spec: "Manual", weight: "52 kg" },
+            { id: "MTM-044", name: "เครื่องรีดฝ้าเพดาน/ผนังระแนง", spec: "Motor: 1.5 kw | 50Hz", weight: "2.9 tons" },
+            { id: "MTM-045", name: "เครื่องรีดผนังระแนงเฉียง 2 สัน", spec: "Motor: 2.2 kw | 60Hz", weight: "2.5 tons" },
+            { id: "MTM-046", name: "เครื่องกวนถังน้ำยา", spec: "Motor: 0.75 kw | 60Hz", weight: "0.2 tons" },
+            { id: "MTM-047", name: "เครื่องรีดเหล็กตัว C3", spec: "Motor: 7.5 kw", weight: "7.5 tons" },
+            { id: "MTM-048", name: "เครื่องอันคอยล์เลอร์ (Uncoiler)", spec: "Motor: 2.2 kw | 50Hz", weight: "2 tons" },
+            { id: "MTM-049", name: "เครื่องครอบปิดหน้า PU (ตะเข็บคู่ 760)", spec: "Motor: 1.1 kw | 60Hz", weight: "1 tons" },
+            { id: "MTM-050", name: "เครื่องรีดรางน้ำ 405", spec: "Motor: 1.5 kw", weight: "2.2 tons" },
+            { id: "MTM-051", name: "เครื่องคลายม้วนแบบใช้มือหมุน", spec: "Manual", weight: "284 kg" }
+        ];
+
+        document.getElementById('totalCount').innerText = machines.length;
+        const grid = document.getElementById('machineGrid');
+
+        function renderMachines(data) {
+            grid.innerHTML = '';
+            data.forEach(m => {
+                const col = document.createElement('div');
+                col.className = 'col';
+                col.innerHTML = `
+                    <div class="card machine-card shadow-sm h-100">
+                        <div class="img-container">
+                            <img src="img/${m.id}.jpg" 
+                                 class="machine-img" 
+                                 onerror="this.onerror=null; this.src='img/${m.id}.png'; this.nextElementSibling.style.display='flex'; this.style.display='none';" 
+                                 onload="this.nextElementSibling.style.display='none'">
+                            
+                            <div class="no-img-placeholder" style="display:none">
+                                <i class="bi bi-image"></i>
+                                <span style="font-size:0.8rem; margin-top:5px">รอรูปภาพ</span>
+                            </div>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-auto">
+                                <h5 class="card-title fw-bold text-dark">${m.name}</h5>
+                                <span class="badge bg-primary mb-2">${m.id}</span>
+                                <div class="text-muted small mt-2">
+                                    <i class="bi bi-lightning-charge"></i> ${m.spec}<br>
+                                    <i class="bi bi-box-seam"></i> น้ำหนัก: ${m.weight}
+                                </div>
+                            </div>
+                            </div>
+                    </div>
+                `;
+                grid.appendChild(col);
+            });
+        }
+
+        function filterMachines() {
+            const txt = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = machines.filter(m => 
+                m.name.toLowerCase().includes(txt) || m.id.toLowerCase().includes(txt)
+            );
+            renderMachines(filtered);
+        }
+
+        renderMachines(machines);
+    </script>
+
+</body>
+</html>

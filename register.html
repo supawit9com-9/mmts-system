@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนสมาชิกใหม่ - MMTS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .register-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 15px 25px rgba(0,0,0,0.2); width: 100%; max-width: 500px; }
+        .btn-primary { background: #1e3c72; border: none; }
+        .btn-primary:hover { background: #162b55; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="register-card">
+    <h3 class="text-center fw-bold mb-3 text-primary"><i class="bi bi-shield-lock-fill"></i> ลงทะเบียน (OTP จริง)</h3>
+    
+    <form onsubmit="handleRegister(event)">
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <label class="form-label small">ชื่อผู้ใช้ (Username)</label>
+                <input type="text" id="regUser" class="form-control" placeholder="ตั้งชื่อภาษาอังกฤษ" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small">รหัสผ่าน (Password)</label>
+                <input type="password" id="regPass" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label small">ชื่อ-นามสกุล (ที่แสดงในระบบ)</label>
+            <input type="text" id="regName" class="form-control" placeholder="เช่น ช่างใหม่ ไฟแรง" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label small">สถานะของคุณ</label>
+            <select id="regRole" class="form-select" onchange="checkRole()" required>
+                <option value="" selected disabled>-- กรุณาเลือก --</option>
+                <option value="USER">ลูกค้าทั่วไป</option>
+                <option value="TECHNICIAN">พนักงาน/ช่างซ่อม (ต้องรออนุมัติ)</option>
+                <option value="MANAGER">ระดับหัวหน้า (ต้องรออนุมัติ)</option>
+            </select>
+            <div id="roleAlert" class="form-text text-warning d-none">
+                <i class="bi bi-exclamation-circle"></i> บัญชีนี้ต้องรอการอนุมัติจากหัวหน้าก่อนใช้งาน
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label small">อีเมล (เพื่อรับรหัส OTP)</label>
+            <div class="input-group">
+                <input type="email" id="regEmail" class="form-control" placeholder="example@gmail.com" required>
+                <button type="button" id="btnOTP" class="btn btn-outline-secondary" onclick="sendRealOTP()">
+                    ขอรหัส OTP
+                </button>
+            </div>
+            <div class="form-text text-muted">ระบบจะส่งรหัส 6 หลักไปที่อีเมลของคุณ</div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label small">กรอกรหัส OTP</label>
+            <input type="text" id="regOTP" class="form-control" placeholder="XXXXXX" maxlength="6" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2 mb-3">ลงทะเบียน</button>
+        <div class="text-center">
+            <a href="login.html" class="text-decoration-none small text-muted">มีบัญชีแล้ว? เข้าสู่ระบบ</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // -------------------------------------------------------------
+    // ⚠️ ส่วนที่ใส่ Key ให้แล้ว ⚠️
+    // -------------------------------------------------------------
+    const SERVICE_ID = "service_9SUPAWIT";    // ✅ ใส่ให้แล้ว
+    const PUBLIC_KEY = "NuJH3BsdIqiNsrRcK";   // ✅ ใส่ให้แล้ว
+    
+    // ❗ สิ่งสุดท้ายที่ต้องทำ: ไปเอารหัส Template ID มาใส่ตรงนี้ครับ
+    // (ดูวิธีหาด้านล่าง)
+    const TEMPLATE_ID = "template_du0slm2"; 
+    // -------------------------------------------------------------
+
+    (function() {
+        emailjs.init(PUBLIC_KEY);
+    })();
+
+    let generatedOTP = null;
+
+    function checkRole() {
+        const role = document.getElementById('regRole').value;
+        const alertBox = document.getElementById('roleAlert');
+        if(role === 'TECHNICIAN' || role === 'MANAGER') alertBox.classList.remove('d-none');
+        else alertBox.classList.add('d-none');
+    }
+
+    function sendRealOTP() {
+        const email = document.getElementById('regEmail').value;
+        const name = document.getElementById('regName').value || "ผู้ใช้งาน";
+        const btn = document.getElementById('btnOTP');
+
+        if(!email || !email.includes('@')) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกอีเมลให้ถูกต้องก่อนครับ', 'warning');
+
+        generatedOTP = Math.floor(100000 + Math.random() * 900000);
+
+        btn.innerHTML = '<span class="loader"></span> กำลังส่ง...';
+        btn.disabled = true;
+
+        // ผมปรับโค้ดให้รองรับ Template "Contact Us" ของคุณโดยเฉพาะ
+        // โดยส่ง OTP ไปในตัวแปร 'message' เลย (จะได้ไม่ต้องไปแก้ Template เยอะ)
+        const emailParams = {
+            name: name,         // ตรงกับ {{name}} ใน Template
+            to_email: email,
+            message: "รหัส OTP ของคุณคือ: " + generatedOTP + " (รหัสจะหมดอายุใน 5 นาที)", 
+            otp: generatedOTP
+        };
+
+        emailjs.send(SERVICE_ID, TEMPLATE_ID, emailParams)
+        .then(function() {
+            btn.innerHTML = 'ส่งแล้ว ✅';
+            Swal.fire('ส่งรหัสสำเร็จ!', `รหัส OTP ถูกส่งไปที่ ${email} แล้ว\n(เช็คใน Inbox หรือ Junk Mail)`, 'success');
+            setTimeout(() => { btn.disabled = false; btn.innerText = "ขอรหัส OTP อีกครั้ง"; }, 60000);
+        }, function(error) {
+            btn.innerHTML = 'ขอรหัส OTP';
+            btn.disabled = false;
+            console.error('FAILED...', error);
+            Swal.fire('เกิดข้อผิดพลาด', 'กรุณาเช็คว่าใส่ Template ID ถูกต้องหรือยังครับ?', 'error');
+        });
+    }
+
+    function handleRegister(e) {
+        e.preventDefault();
+        
+        const inputOTP = document.getElementById('regOTP').value;
+        if(inputOTP != generatedOTP) {
+            return Swal.fire('รหัสไม่ถูกต้อง', 'กรุณาตรวจสอบรหัส OTP อีกครั้ง', 'error');
+        }
+
+        const u = document.getElementById('regUser').value.toLowerCase().trim();
+        const p = document.getElementById('regPass').value;
+        const n = document.getElementById('regName').value;
+        const r = document.getElementById('regRole').value;
+
+        let allUsers = JSON.parse(localStorage.getItem('mmts_users_db')) || [];
+        if(allUsers.find(user => user.u === u)) {
+            return Swal.fire('ซ้ำ', 'ชื่อผู้ใช้นี้มีคนใช้แล้ว เปลี่ยนชื่อใหม่นะครับ', 'warning');
+        }
+
+        let status = 'ACTIVE';
+        if(r === 'TECHNICIAN' || r === 'MANAGER') status = 'PENDING';
+
+        const newUser = { u: u, p: p, name: n, role: r, status: status };
+        allUsers.push(newUser);
+        localStorage.setItem('mmts_users_db', JSON.stringify(allUsers));
+
+        if(status === 'PENDING') {
+            Swal.fire({
+                title: 'ลงทะเบียนสำเร็จ (รออนุมัติ)',
+                text: 'บัญชีของคุณต้องรอให้ พี่เก้ง (Manager) อนุมัติก่อนใช้งาน',
+                icon: 'warning'
+            }).then(() => window.location.href = 'login.html');
+        } else {
+            Swal.fire('ลงทะเบียนสำเร็จ!', 'คุณสามารถเข้าสู่ระบบได้ทันที', 'success')
+            .then(() => window.location.href = 'login.html');
+        }
+    }
+</script>
+
+</body>
+</html>

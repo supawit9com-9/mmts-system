@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>MMTS Ultimate Dashboard</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+
+    <style>
+        :root { --sidebar-width: 260px; --primary: #2563eb; --bg-body: #f1f5f9; }
+        body { font-family: 'Sarabun', sans-serif; background-color: var(--bg-body); overflow-x: hidden; }
+
+        /* --- Sidebar & Mobile Menu --- */
+        .sidebar { 
+            width: var(--sidebar-width); height: 100vh; position: fixed; left: 0; top: 0; 
+            background: #0f172a; padding: 20px; z-index: 1050; transition: 0.3s; 
+            display: flex; flex-direction: column; overflow-y: auto;
+        }
+        .nav-link { color: #94a3b8; padding: 12px; border-radius: 10px; margin-bottom: 5px; display: flex; align-items: center; gap: 12px; text-decoration: none; transition: 0.2s; }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: #fff; }
+        
+        .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: 0.3s; }
+        .mobile-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1040; }
+
+        /* Mobile Responsive Rules */
+        @media (max-width: 768px) {
+            .sidebar { left: -100%; } /* ซ่อน Sidebar */
+            .sidebar.active { left: 0; } /* โชว์เมื่อกด */
+            .main-content { margin-left: 0; padding: 15px; }
+            .mobile-overlay.active { display: block; }
+            .hide-on-mobile { display: none; }
+        }
+
+        /* --- Cards & Charts --- */
+        .card-custom { background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); height: 100%; }
+        
+        /* --- Table --- */
+        .table-responsive { overflow-x: auto; white-space: nowrap; }
+        .table-custom th { background: #f8fafc; color: #64748b; font-weight: 600; font-size: 0.8rem; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        
+        /* --- Drag & Drop (Game Style) --- */
+        .drop-zone { border: 2px dashed #cbd5e1; border-radius: 12px; background: #f8fafc; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.2s; }
+        .drop-zone.active { background: #eff6ff; border-color: var(--primary); }
+        
+        .tech-pool { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; }
+        .tech-card { 
+            min-width: 70px; text-align: center; padding: 5px; border-radius: 10px; background: white; 
+            border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; user-select: none;
+        }
+        .tech-card:active { transform: scale(0.95); }
+        .tech-card.selected { border: 2px solid var(--primary); background: #eff6ff; }
+        .tech-card.busy { opacity: 0.5; filter: grayscale(100%); pointer-events: none; }
+        .tech-card img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; pointer-events: none; }
+
+        /* Floating Buttons */
+        .fab-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 2000; }
+        .fab-btn { width: 55px; height: 55px; border-radius: 50%; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; transition: 0.2s; }
+        .fab-chat { background: #2563eb; }
+        .fab-add { background: #16a34a; }
+    </style>
+</head>
+<body>
+
+<div class="mobile-overlay" onclick="toggleMenu()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="d-flex align-items-center gap-2 mb-4 px-2 text-white">
+        <div class="bg-primary rounded p-1"><i class="bi bi-grid-1x2-fill fs-4"></i></div>
+        <div><h5 class="m-0 fw-bold">MMTS</h5><small style="opacity:0.7">System v7.0</small></div>
+        <button class="btn btn-sm btn-dark ms-auto d-md-none" onclick="toggleMenu()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    
+    <a href="dashboard.html" class="nav-link active"><i class="bi bi-speedometer2"></i> แดชบอร์ด</a>
+    <a href="machines.html" class="nav-link"><i class="bi bi-hdd-rack"></i> ทะเบียนเครื่อง</a>
+    <a href="profile.html" class="nav-link"><i class="bi bi-person-circle"></i> โปรไฟล์</a>
+    <a href="admin.html" id="btnAdminLink" class="nav-link text-warning d-none mt-auto"><i class="bi bi-shield-lock-fill"></i> ผู้จัดการ</a>
+    <a href="#" onclick="logout()" class="nav-link text-danger"><i class="bi bi-box-arrow-right"></i> ออกจากระบบ</a>
+</div>
+
+<div class="main-content">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-light shadow-sm d-md-none" onclick="toggleMenu()"><i class="bi bi-list fs-4"></i></button>
+            <div>
+                <h4 class="fw-bold m-0">ภาพรวมงาน</h4>
+                <small class="text-muted" id="dateDisplay">...</small>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2" onclick="location.href='profile.html'">
+            <img src="" id="userAvatar" class="rounded-circle border" width="40" height="40">
+            <div class="d-none d-md-block lh-1 text-end">
+                <div class="fw-bold small" id="userName">...</div>
+                <div class="text-muted" style="font-size:0.7rem" id="userRole">...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="card-custom d-flex flex-row align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-primary fw-bold">งานซ่อม</h6>
+                    <h2 class="fw-bold mb-0" id="statRepair">0</h2>
+                </div>
+                <div style="width:100px; height:100px;"><canvas id="chartRepair"></canvas></div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card-custom d-flex flex-row align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-success fw-bold">งานติดตั้ง</h6>
+                    <h2 class="fw-bold mb-0" id="statInstall">0</h2>
+                </div>
+                <div style="width:100px; height:100px;"><canvas id="chartInstall"></canvas></div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card-custom p-2">
+                <div id="calendar" style="font-size:0.7rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-custom p-0 overflow-hidden">
+        <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold m-0"><i class="bi bi-table"></i> ตารางงานล่าสุด</h6>
+            <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="openJobModal()">+ เพิ่มงาน</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-custom align-middle mb-0">
+                <thead><tr><th>วันที่</th><th>สถานะ</th><th>ลูกค้า/สถานที่</th><th>ทีมช่าง</th><th>จัดการ</th></tr></thead>
+                <tbody id="jobTableBody">
+                    <tr><td colspan="5" class="text-center py-4 text-muted">กำลังโหลดข้อมูล...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<div class="fab-container">
+    <button class="fab-btn fab-chat" onclick="openChat()"><i class="bi bi-chat-dots-fill"></i></button>
+    <button class="fab-btn fab-add d-md-none" onclick="openJobModal()"><i class="bi bi-plus-lg"></i></button>
+</div>
+
+<div class="modal fade" id="chatModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content border-0 rounded-4"><div class="modal-header border-0 bg-primary text-white"><h6 class="m-0"><i class="bi bi-chat-fill"></i> แชททีมช่าง</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-2 bg-light" id="chatBox" style="height:350px; overflow-y:auto"></div><div class="p-2 bg-white"><div class="input-group"><input id="chatInp" class="form-control rounded-pill" placeholder="..."><button onclick="sendChat()" class="btn btn-primary rounded-circle ms-1"><i class="bi bi-send-fill"></i></button></div></div></div></div></div>
+
+<div class="modal fade" id="jobModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold"><i class="bi bi-calendar-check text-primary"></i> บันทึกงาน</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="jobForm">
+                    <input type="hidden" id="editId">
+                    
+                    <div class="bg-light p-3 rounded-3 mb-3">
+                        <label class="small fw-bold text-danger">* 1. เลือกวันที่ (เพื่อเช็คคิวช่าง)</label>
+                        <input type="date" id="inpDate" class="form-control mb-3" onchange="checkQueue()">
+                        
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="type" id="t1" value="repair" checked onchange="toggleType()"><label class="btn btn-outline-primary" for="t1">ซ่อม</label>
+                            <input type="radio" class="btn-check" name="type" id="t2" value="install" onchange="toggleType()"><label class="btn btn-outline-success" for="t2">ติดตั้ง</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <input type="text" id="inpName" class="form-control mb-2" placeholder="ชื่อลูกค้า / โครงการ">
+                        <div class="repair-fields">
+                            <div class="row g-2 mb-2"><div class="col-6"><input id="inpMachine" class="form-control" placeholder="ชื่อเครื่อง"></div><div class="col-6"><input id="inpSerial" class="form-control" placeholder="S/N"></div></div>
+                            <textarea id="inpProb" class="form-control" rows="2" placeholder="อาการเสีย..."></textarea>
+                        </div>
+                        <div class="install-fields d-none">
+                            <input id="inpLoc" class="form-control mb-2" placeholder="สถานที่ติดตั้ง">
+                        </div>
+                        <input id="inpMap" class="form-control mt-2" placeholder="ลิงก์ Google Map">
+                        <input type="file" id="inpFile" class="form-control mt-2">
+                    </div>
+
+                    <div class="border rounded-3 p-3">
+                        <label class="small fw-bold text-primary mb-2">* 3. เลือกหัวหน้าช่าง (คลิกที่รูป)</label>
+                        <div class="tech-pool" id="techPool"><small class="text-muted">กรุณาเลือกวันที่ก่อน...</small></div>
+                        <input type="hidden" id="inpTech">
+                        <div id="selectedTech" class="mt-2 text-success fw-bold small"></div>
+                        
+                        <div class="mt-2 border-top pt-2">
+                            <label class="small text-muted">ผู้ช่วย (สูงสุด 4 คน)</label>
+                            <div class="row g-1">
+                                <div class="col-6"><input id="a1" class="form-control form-control-sm" placeholder="1."></div>
+                                <div class="col-6"><input id="a2" class="form-control form-control-sm" placeholder="2."></div>
+                                <div class="col-6"><input id="a3" class="form-control form-control-sm" placeholder="3."></div>
+                                <div class="col-6"><input id="a4" class="form-control form-control-sm" placeholder="4."></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-primary w-100 rounded-pill fw-bold" onclick="saveJob()">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "http://127.0.0.1:5000/api";
+    const curUser = localStorage.getItem('mmts_user') || 'Guest';
+    const curRole = localStorage.getItem('mmts_role') || 'TECH';
+    let allData = { users:[], repairs:[], installs:[] };
+
+    // --- Init ---
+    async function init() {
+        // Fetch Data (Parallel)
+        try {
+            const [u, r, i] = await Promise.all([
+                fetch(`${API_URL}/users`).then(res=>res.json()),
+                fetch(`${API_URL}/repairs`).then(res=>res.json()),
+                fetch(`${API_URL}/installs`).then(res=>res.json())
+            ]);
+            allData = { users:u, repairs:r, installs:i };
+            
+            // Setup User UI
+            const me = u.find(x=>x.name === curUser);
+            document.getElementById('userName').innerText = curUser;
+            document.getElementById('userRole').innerText = curRole;
+            document.getElementById('userAvatar').src = me?.avatar ? `${API_URL.replace('/api','')}/uploads/${me.avatar}` : `https://ui-avatars.com/api/?name=${curUser}`;
+            document.getElementById('dateDisplay').innerText = new Date().toLocaleDateString('th-TH');
+            if(curRole === 'MANAGER') document.getElementById('btnAdminLink').classList.remove('d-none');
+
+            renderCharts();
+            renderTable();
+            initCalendar();
+        } catch(e) {
+            console.error("API Error:", e);
+            document.getElementById('jobTableBody').innerHTML = `<tr><td colspan="5" class="text-center text-danger">เชื่อมต่อ Server ไม่ได้ (${e.message})</td></tr>`;
+        }
+    }
+    init();
+
+    // --- Core Logic ---
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.querySelector('.mobile-overlay').classList.toggle('active');
+    }
+
+    function renderTable() {
+        const tb = document.getElementById('jobTableBody'); tb.innerHTML = '';
+        const list = [...allData.repairs.map(x=>({...x, t:'repair', d:x.serviceDate})), ...allData.installs.map(x=>({...x, t:'install', d:x.startDate}))];
+        list.sort((a,b)=>new Date(b.d) - new Date(a.d)); // เรียงใหม่ไปเก่า
+
+        list.forEach(j => {
+            const isRep = j.t === 'repair';
+            const badge = isRep ? '<span class="badge bg-primary bg-opacity-10 text-primary">ซ่อม</span>' : '<span class="badge bg-success bg-opacity-10 text-success">ติดตั้ง</span>';
+            const status = j.status==='COMPLETED' ? '<span class="badge bg-success">เสร็จ</span>' : '<span class="badge bg-warning text-dark">รอ</span>';
+            const title = isRep ? j.customer : j.project;
+            const sub = isRep ? j.machineName : j.location;
+            
+            const btn = (curRole==='MANAGER' || curUser===j.technician) ? 
+                `<button onclick="editJob('${j.t}','${j.id}')" class="btn btn-sm btn-light border"><i class="bi bi-pencil"></i></button>` : '';
+
+            tb.innerHTML += `
+            <tr>
+                <td><span style="font-weight:600; font-size:0.8rem">${j.d}</span></td>
+                <td>${status}</td>
+                <td><div class="fw-bold small">${title}</div><div class="text-muted" style="font-size:0.7rem">${sub}</div></td>
+                <td><small>${j.technician}</small></td>
+                <td>${btn}</td>
+            </tr>`;
+        });
+    }
+
+    function renderCharts() {
+        const rCount = allData.repairs.length;
+        const iCount = allData.installs.length;
+        document.getElementById('statRepair').innerText = rCount;
+        document.getElementById('statInstall').innerText = iCount;
+
+        // Simple Doughnuts
+        new Chart(document.getElementById('chartRepair'), { type:'doughnut', data:{datasets:[{data:[rCount, 1], backgroundColor:['#2563eb','#e2e8f0']}]}, options:{cutout:'75%', events:[]} });
+        new Chart(document.getElementById('chartInstall'), { type:'doughnut', data:{datasets:[{data:[iCount, 1], backgroundColor:['#16a34a','#e2e8f0']}]}, options:{cutout:'75%', events:[]} });
+    }
+
+    function initCalendar() {
+        const evts = [
+            ...allData.repairs.map(x=>({title:`🔧 ${x.customer}`, start:x.serviceDate, color:'#2563eb'})),
+            ...allData.installs.map(x=>({title:`🚀 ${x.project}`, start:x.startDate, color:'#16a34a'}))
+        ];
+        var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+            initialView: 'listMonth', headerToolbar: { left:'prev,next', center:'title', right:'' },
+            height: 250, events: evts, locale: 'th'
+        });
+        calendar.render();
+    }
+
+    // --- Job Modal Logic ---
+    function openJobModal() {
+        document.getElementById('jobForm').reset();
+        document.getElementById('editId').value = '';
+        document.getElementById('techPool').innerHTML = '<small class="text-muted">เลือกวันที่ก่อน...</small>';
+        document.getElementById('selectedTech').innerText = '';
+        new bootstrap.Modal(document.getElementById('jobModal')).show();
+    }
+
+    function checkQueue() {
+        const d = document.getElementById('inpDate').value;
+        const pool = document.getElementById('techPool');
+        pool.innerHTML = '';
+        if(!d) return;
+
+        allData.users.forEach(u => {
+            const busy = [...allData.repairs, ...allData.installs].find(j => (j.serviceDate===d || j.startDate===d) && j.technician===u.name && j.status!=='COMPLETED');
+            const cls = busy ? 'busy' : '';
+            const img = u.avatar ? `${API_URL.replace('/api','')}/uploads/${u.avatar}` : `https://ui-avatars.com/api/?name=${u.name}`;
+            
+            // ใช้ onclick แทน drag drop เพื่อให้รองรับมือถือ
+            pool.innerHTML += `
+            <div class="tech-card ${cls}" onclick="${busy ? '' : `selectTech('${u.name}', this)`}">
+                <img src="${img}"><div>${u.name}</div>
+                ${busy ? '<div class="text-danger" style="font-size:0.6rem">ไม่ว่าง</div>' : ''}
+            </div>`;
+        });
+    }
+
+    function selectTech(name, el) {
+        document.querySelectorAll('.tech-card').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('inpTech').value = name;
+        document.getElementById('selectedTech').innerHTML = `<i class="bi bi-check-circle"></i> เลือก: ${name}`;
+    }
+
+    function toggleType() {
+        const isRep = document.getElementById('t1').checked;
+        document.querySelector('.repair-fields').classList.toggle('d-none', !isRep);
+        document.querySelector('.install-fields').classList.toggle('d-none', isRep);
+    }
+
+    async function saveJob() {
+        const id = document.getElementById('editId').value;
+        const tech = document.getElementById('inpTech').value;
+        if(!tech) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกช่าง', 'warning');
+
+        // Construct Payload
+        const type = document.getElementById('t1').checked ? 'repair' : 'install';
+        const date = document.getElementById('inpDate').value;
+        let asst = []; for(let i=1; i<=4; i++) { let v=document.getElementById('a'+i).value; if(v) asst.push(v); }
+        
+        let payload = { technician: tech, assistants: asst, status: id ? undefined : 'PENDING' };
+        
+        if(type==='repair') {
+            payload.customer = document.getElementById('inpName').value;
+            payload.machineName = document.getElementById('inpMachine').value;
+            payload.serialNo = document.getElementById('inpSerial').value;
+            payload.problem = document.getElementById('inpProb').value;
+            payload.serviceDate = date;
+        } else {
+            payload.project = document.getElementById('inpName').value;
+            payload.location = document.getElementById('inpLoc').value;
+            payload.startDate = date;
+        }
+        payload.mapLink = document.getElementById('inpMap').value;
+
+        // Upload File
+        const file = document.getElementById('inpFile').files[0];
+        if(file) {
+            const fd = new FormData(); fd.append('file', file);
+            const res = await fetch(`${API_URL}/upload`, {method:'POST', body:fd});
+            const d = await res.json(); payload.image = d.filename;
+        }
+
+        const endpoint = type==='repair' ? 'repairs' : 'installs';
+        await fetch(id ? `${API_URL}/${endpoint}/${id}` : `${API_URL}/${endpoint}`, {
+            method: id ? 'PUT' : 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+        });
+        
+        location.reload();
+    }
+
+    function editJob(type, id) {
+        const item = type==='repair' ? allData.repairs.find(x=>x.id==id) : allData.installs.find(x=>x.id==id);
+        if(!item) return;
+        
+        openJobModal();
+        document.getElementById('editId').value = id;
+        document.getElementById('inpDate').value = type==='repair' ? item.serviceDate : item.startDate;
+        checkQueue(); // Load tech list
+        
+        setTimeout(() => {
+            // Auto select tech visually
+            const cards = document.querySelectorAll('.tech-card');
+            cards.forEach(c => { if(c.innerText.includes(item.technician)) selectTech(item.technician, c); });
+        }, 500);
+
+        if(type==='repair') {
+            document.getElementById('t1').checked = true; toggleType();
+            document.getElementById('inpName').value = item.customer;
+            document.getElementById('inpMachine').value = item.machineName;
+            document.getElementById('inpSerial').value = item.serialNo;
+            document.getElementById('inpProb').value = item.problem;
+        } else {
+            document.getElementById('t2').checked = true; toggleType();
+            document.getElementById('inpName').value = item.project;
+            document.getElementById('inpLoc').value = item.location;
+        }
+        document.getElementById('inpMap').value = item.mapLink || '';
+        
+        if(item.assistants) item.assistants.forEach((a,i) => document.getElementById('a'+(i+1)).value = a);
+    }
+
+    // --- Chat ---
+    function openChat() { new bootstrap.Modal(document.getElementById('chatModal')).show(); loadChat(); }
+    async function loadChat() {
+        const res = await fetch(`${API_URL}/messages`); const data = await res.json();
+        let html = '';
+        data.forEach(m => {
+            const me = m.sender === curUser;
+            html += `<div class="d-flex mb-2 ${me?'justify-content-end':''}"><div class="p-2 px-3 rounded-3 ${me?'bg-primary text-white':'bg-white border'}" style="max-width:80%"><small style="font-size:0.6rem; opacity:0.7">${m.sender}</small><div>${m.text}</div></div></div>`;
+        });
+        document.getElementById('chatBox').innerHTML = html;
+        document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+    }
+    async function sendChat() {
+        const t = document.getElementById('chatInp').value; if(!t) return;
+        await fetch(`${API_URL}/messages`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({sender:curUser, text:t})});
+        document.getElementById('chatInp').value=''; loadChat();
+    }
+
+    function logout() { localStorage.clear(); location.href='login.html'; }
+</script>
+</body>
+</html>
